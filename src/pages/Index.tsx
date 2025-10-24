@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { FileUpload } from "@/components/FileUpload";
-import { DocumentList } from "@/components/DocumentList";
-import { DocumentViewer } from "@/components/DocumentViewer";
 import { BookOpen } from "lucide-react";
+import { FileUpload } from "../components/FileUpload";
+import { DocumentList } from "../components/DocumentList";
+import { DocumentViewer } from "../components/DocumentViewer";
+import { ChatArea } from "../components/ChatArea";
+
 
 interface UploadedFile {
   id: string;
@@ -48,52 +50,42 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Layout */}
       <div className="flex h-[calc(100vh-73px)]">
-        {/* Document Viewer - Left Pane */}
-        {selectedFile && (
-          <div className="w-1/2 border-r border-border">
-            <DocumentViewer 
-              file={selectedFile} 
-              onClose={() => setSelectedFileId(null)} 
-            />
-          </div>
-        )}
-
-        {/* Main Content Area - Right Pane */}
-        <div className={`${selectedFile ? 'w-1/2' : 'w-full'} overflow-auto transition-all duration-300`}>
-          <div className="container mx-auto px-6 py-8 max-w-4xl">
-            {/* Upload Section */}
-            <div className="mb-8">
+        {/* Left Pane — File List or Viewer */}
+        <div className="w-1/3 border-r border-border overflow-auto transition-all duration-300">
+          {!selectedFile && (
+            <div className="p-6">
               <FileUpload onFilesUploaded={handleFilesUploaded} />
-            </div>
-
-            {/* Document List */}
-            {files.length > 0 && (
-              <div className="mb-8">
-                <DocumentList
-                  files={files}
-                  selectedFileId={selectedFileId}
-                  onFileSelect={setSelectedFileId}
-                  onFileRemove={handleFileRemove}
-                />
-              </div>
-            )}
-
-            {/* Empty State */}
-            {files.length === 0 && (
-              <div className="text-center py-12">
-                <div className="max-w-md mx-auto space-y-4">
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Welcome to PluteQ
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Upload your documents to get started. Organize your research, notes, and ideas all in one place.
-                  </p>
+              {files.length > 0 && (
+                <div className="mt-8">
+                  <DocumentList
+                    files={files}
+                    selectedFileId={selectedFileId}
+                    onFileSelect={setSelectedFileId}
+                    onFileRemove={handleFileRemove}
+                  />
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+              {files.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  No documents yet. Upload to get started.
+                </div>
+              )}
+            </div>
+          )}
+
+          {selectedFile && (
+            <DocumentViewer
+              file={selectedFile}
+              onClose={() => setSelectedFileId(null)}
+            />
+          )}
+        </div>
+
+        {/* Middle Pane — Chat Area */}
+        <div className="flex-1 overflow-auto">
+          <ChatArea />
         </div>
       </div>
     </div>
