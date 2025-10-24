@@ -42,7 +42,7 @@ const Index = () => {
               <BookOpen className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              NotebookAI
+              PluteQ
             </h1>
           </div>
         </div>
@@ -85,7 +85,7 @@ const Index = () => {
               <div className="text-center py-12">
                 <div className="max-w-md mx-auto space-y-4">
                   <h2 className="text-2xl font-bold text-foreground">
-                    Welcome to NotebookAI
+                    Welcome to PluteQ
                   </h2>
                   <p className="text-muted-foreground">
                     Upload your documents to get started. Organize your research, notes, and ideas all in one place.
