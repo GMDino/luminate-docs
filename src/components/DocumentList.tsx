@@ -1,4 +1,4 @@
-import { FileText, Image, FileCode, File, X } from "lucide-react";
+import { FileText, Image, FileCode, File, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface UploadedFile {
@@ -39,12 +39,13 @@ export const DocumentList = ({
   selectedSources,
   onToggleSource,
 }: DocumentListProps) => {
-  if (files.length === 0) return null;
+  if (!files.length) return null;
 
   const allSelected = selectedSources.size === files.length;
 
   return (
     <div className="space-y-2">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-foreground">
           Your Sources ({files.length})
@@ -54,7 +55,7 @@ export const DocumentList = ({
           size="sm"
           onClick={() => {
             if (allSelected) {
-              files.forEach((f) => onToggleSource(f.id)); // deselect all
+              files.forEach((f) => onToggleSource(f.id));
             } else {
               files.forEach((f) => {
                 if (!selectedSources.has(f.id)) onToggleSource(f.id);
@@ -66,6 +67,7 @@ export const DocumentList = ({
         </Button>
       </div>
 
+      {/* File List */}
       <div className="space-y-2">
         {files.map((file) => {
           const Icon = getFileIcon(file.type);
@@ -76,7 +78,7 @@ export const DocumentList = ({
             <div
               key={file.id}
               className={`
-                group relative rounded-lg p-4 cursor-pointer transition-all
+                group relative flex items-center gap-3 rounded-lg p-3 cursor-pointer transition-all
                 ${isSelected
                   ? "bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary"
                   : "bg-card hover:bg-card/80 border border-border hover:border-primary/30"
@@ -86,49 +88,56 @@ export const DocumentList = ({
                 boxShadow: isSelected ? "var(--shadow-elevated)" : "var(--shadow-soft)",
               }}
             >
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onToggleSource(file.id);
-                  }}
-                  className="mt-1"
-                />
-
-                <div
-                  className={`
-                    rounded-lg p-2 transition-colors
-                    ${isSelected ? "bg-primary/20" : "bg-muted"}
-                  `}
-                >
-                  <Icon
-                    className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0" onClick={() => onFileSelect(file.id)}>
-                  <p className={`font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatFileSize(file.size)}
-                  </p>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onFileRemove(file.id);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+              {/* Modern Checkbox */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSource(file.id);
+                }}
+                className={`flex items-center justify-center w-5 h-5 rounded-md border transition-colors shrink-0 cursor-pointer
+                  ${isChecked
+                    ? "bg-primary border-primary"
+                    : "bg-card border-border hover:border-primary/50"
+                  }`}
+              >
+                {isChecked && <Check className="w-4 h-4 text-white" />}
               </div>
+
+              {/* File Icon */}
+              <div
+                className={`rounded-lg p-2 transition-colors shrink-0
+                  ${isSelected ? "bg-primary/20" : "bg-muted"}`}
+              >
+                <Icon
+                  className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                />
+              </div>
+
+              {/* File Info */}
+              <div
+                className="flex-1 min-w-0"
+                onClick={() => onFileSelect(file.id)}
+              >
+                <p className={`font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  {file.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatFileSize(file.size)}
+                </p>
+              </div>
+
+              {/* Remove Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFileRemove(file.id);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           );
         })}
