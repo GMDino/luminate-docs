@@ -63,7 +63,7 @@ const Index = () => {
   const handleMouseMove = (e: MouseEvent) => {
     if (!isResizing.current) return;
     const newWidth = (e.clientX / window.innerWidth) * 100;
-    setSidebarWidth(Math.min(Math.max(newWidth, 20), 60)); // clamp 20%-60%
+    setSidebarWidth(Math.min(Math.max(newWidth, 20), 60));
   };
 
   const stopResize = () => {
@@ -109,30 +109,18 @@ const Index = () => {
 
       {/* Main layout */}
       <main className="flex flex-1 h-[calc(100vh-73px)] overflow-hidden">
-        {/* Left Sidebar */}
+        {/* Sidebar */}
         <aside
           className={`flex-shrink-0 border-r border-border bg-card/50 backdrop-blur-sm transition-all duration-200 ease-in-out
             ${mobileSidebarOpen ? "fixed z-20 left-0 top-0 h-full" : "sm:relative sm:flex-shrink-0 sm:block"}`}
-          style={{
-            width: mobileSidebarOpen ? "80%" : `${sidebarWidth}%`,
-            minWidth: "240px",
-            maxWidth: "700px",
-          }}
+          style={{ width: mobileSidebarOpen ? "80%" : `${sidebarWidth}%`, minWidth: "240px", maxWidth: "700px" }}
         >
-          <div className="h-full overflow-auto no-scrollbar p-6 flex flex-col">
+          <div className="h-full flex flex-col p-6 overflow-auto no-scrollbar">
             {/* Upload pill + Select All */}
             {files.length > 0 ? (
               <div className="mb-4 flex items-center justify-between gap-2">
-                {/* Pill-shaped FileUpload (small variant) */}
                 <FileUpload onFilesUploaded={handleFilesUploaded} small />
-
-                {/* Single Select All button */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSelectAllSources}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium h-9 rounded-md px-3 hover:bg-accent hover:text-accent-foreground"
-                >
+                <Button variant="ghost" size="sm" onClick={handleSelectAllSources}>
                   {selectedSources.size === files.length ? "Deselect All" : "Select All"}
                 </Button>
               </div>
@@ -142,58 +130,40 @@ const Index = () => {
               </div>
             )}
 
+            {/* Selected count */}
+            {files.length > 0 && (
+              <div className="mb-2 text-sm text-muted-foreground">
+                {selectedSources.size} selected
+              </div>
+            )}
+
             {!selectedFile ? (
-              <>
-                {files.length > 0 && (
-                  <DocumentList
-                    files={files}
-                    selectedFileId={selectedFileId}
-                    onFileSelect={setSelectedFileId}
-                    onFileRemove={handleFileRemove}
-                    selectedSources={selectedSources}
-                    onToggleSource={handleToggleSource}
-                  />
-                )}
-                {files.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    No documents yet. Upload to get started.
-                  </div>
-                )}
-              </>
+              <DocumentList
+                files={files}
+                selectedFileId={selectedFileId}
+                onFileSelect={setSelectedFileId}
+                onFileRemove={handleFileRemove}
+                selectedSources={selectedSources}
+                onToggleSource={handleToggleSource}
+              />
             ) : (
               <DocumentViewer file={selectedFile} onClose={() => setSelectedFileId(null)} />
             )}
-
           </div>
 
           {/* Resize handle */}
-          <div
-            onMouseDown={startResize}
-            className="hidden sm:flex absolute top-0 right-0 w-4 h-full items-center justify-center cursor-col-resize hover:bg-border/20 transition"
-          >
+          <div onMouseDown={startResize} className="hidden sm:flex absolute top-0 right-0 w-4 h-full items-center justify-center cursor-col-resize hover:bg-border/20 transition">
             <GripVertical className="text-muted-foreground" />
           </div>
 
           {/* Mobile close button */}
-          {mobileSidebarOpen && (
-            <button
-              className="sm:hidden absolute top-2 right-2 p-2 rounded hover:bg-border/20 z-30"
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <CloseIcon className="w-5 h-5" />
-            </button>
-          )}
+          {mobileSidebarOpen && <button className="sm:hidden absolute top-2 right-2 p-2 rounded hover:bg-border/20 z-30" onClick={() => setMobileSidebarOpen(false)}><CloseIcon className="w-5 h-5" /></button>}
         </aside>
 
         {/* Overlay for mobile */}
-        {mobileSidebarOpen && (
-          <div
-            className="sm:hidden fixed inset-0 bg-black/20 z-10"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-        )}
+        {mobileSidebarOpen && <div className="sm:hidden fixed inset-0 bg-black/20 z-10" onClick={() => setMobileSidebarOpen(false)} />}
 
-        {/* Right Chat Area */}
+        {/* Chat */}
         <section className="flex-1 bg-gradient-to-br from-card to-background overflow-auto no-scrollbar p-6">
           <div className="h-full flex flex-col max-w-4xl mx-auto rounded-2xl border border-border bg-card/70 backdrop-blur-sm shadow-xl">
             <ChatArea />
@@ -201,15 +171,12 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Hide scrollbars but allow scroll */}
       <style>{`
         .no-scrollbar {
           scrollbar-width: none;
           -ms-overflow-style: none;
         }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );
