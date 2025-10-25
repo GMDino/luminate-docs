@@ -44,7 +44,8 @@ export const DocumentList = ({
   const allSelected = selectedSources.size === files.length;
 
   return (
-    <div className="space-y-2">
+    // Wrap list in scrollable container
+    <div className="flex-1 overflow-auto no-scrollbar space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-foreground">

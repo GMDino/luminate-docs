@@ -18,11 +18,10 @@ const Index = () => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
-  const [sidebarWidth, setSidebarWidth] = useState(35); // % width
+  const [sidebarWidth, setSidebarWidth] = useState(35);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isResizing = useRef(false);
 
-  // File handlers
   const handleFilesUploaded = (newFiles: UploadedFile[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
   };
@@ -37,7 +36,6 @@ const Index = () => {
     if (selectedFileId === fileId) setSelectedFileId(null);
   };
 
-  // Source selection handlers
   const handleToggleSource = (id: string) => {
     setSelectedSources((prev) => {
       const newSet = new Set(prev);
@@ -54,7 +52,6 @@ const Index = () => {
 
   const selectedFile = files.find((f) => f.id === selectedFileId) || null;
 
-  // Sidebar resizing
   const startResize = () => {
     isResizing.current = true;
     document.body.style.cursor = "col-resize";
@@ -81,7 +78,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-secondary/20 text-foreground">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-secondary/20 text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-md shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -94,9 +91,7 @@ const Index = () => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm text-muted-foreground">
-              Smart Document Workspace
-            </span>
+            <span className="hidden sm:block text-sm text-muted-foreground"></span>
             <button
               className="sm:hidden p-2 rounded hover:bg-border/20"
               onClick={() => setMobileSidebarOpen(true)}
@@ -116,13 +111,10 @@ const Index = () => {
           style={{ width: mobileSidebarOpen ? "80%" : `${sidebarWidth}%`, minWidth: "240px", maxWidth: "700px" }}
         >
           <div className="h-full flex flex-col p-6 overflow-auto no-scrollbar">
-            {/* Upload pill + Select All */}
+            {/* Upload pill (removed top Select All) */}
             {files.length > 0 ? (
-              <div className="mb-4 flex items-center justify-between gap-2">
+              <div className="mb-4">
                 <FileUpload onFilesUploaded={handleFilesUploaded} small />
-                <Button variant="ghost" size="sm" onClick={handleSelectAllSources}>
-                  {selectedSources.size === files.length ? "Deselect All" : "Select All"}
-                </Button>
               </div>
             ) : (
               <div className="mb-4">
@@ -164,9 +156,11 @@ const Index = () => {
         {mobileSidebarOpen && <div className="sm:hidden fixed inset-0 bg-black/20 z-10" onClick={() => setMobileSidebarOpen(false)} />}
 
         {/* Chat */}
-        <section className="flex-1 bg-gradient-to-br from-card to-background overflow-auto no-scrollbar p-6">
-          <div className="h-full flex flex-col max-w-4xl mx-auto rounded-2xl border border-border bg-card/70 backdrop-blur-sm shadow-xl">
-            <ChatArea />
+        <section className="flex-1 bg-gradient-to-br from-card to-background overflow-hidden no-scrollbar p-6">
+          <div className="h-full flex flex-col max-w-4xl mx-auto rounded-2xl border border-border bg-card/70 backdrop-blur-sm shadow-xl overflow-hidden">
+            <div className="flex-1 overflow-auto no-scrollbar">
+              <ChatArea />
+            </div>
           </div>
         </section>
       </main>

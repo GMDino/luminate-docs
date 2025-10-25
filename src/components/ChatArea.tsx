@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export const ChatArea = () => {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -10,9 +11,15 @@ export const ChatArea = () => {
     setInput("");
   };
 
+  // Scroll to the bottom whenever messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {/* Scrollable messages area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -25,7 +32,11 @@ export const ChatArea = () => {
             {m.content}
           </div>
         ))}
+        {/* Dummy div to scroll into view */}
+        <div ref={messagesEndRef} />
       </div>
+
+      {/* Input / composer area */}
       <div className="border-t border-border p-4 flex items-center gap-2">
         <input
           className="flex-1 border border-border rounded-lg px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
