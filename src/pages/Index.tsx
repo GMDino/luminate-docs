@@ -18,10 +18,11 @@ const Index = () => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
-  const [sidebarWidth, setSidebarWidth] = useState(35);
+  const [sidebarWidth, setSidebarWidth] = useState(35); // % width
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isResizing = useRef(false);
 
+  // File handlers
   const handleFilesUploaded = (newFiles: UploadedFile[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
   };
@@ -36,6 +37,7 @@ const Index = () => {
     if (selectedFileId === fileId) setSelectedFileId(null);
   };
 
+  // Source selection handlers
   const handleToggleSource = (id: string) => {
     setSelectedSources((prev) => {
       const newSet = new Set(prev);
@@ -52,6 +54,7 @@ const Index = () => {
 
   const selectedFile = files.find((f) => f.id === selectedFileId) || null;
 
+  // Sidebar resizing
   const startResize = () => {
     isResizing.current = true;
     document.body.style.cursor = "col-resize";
@@ -78,6 +81,7 @@ const Index = () => {
   }, []);
 
   return (
+    // -> use h-screen & overflow-hidden so only internal panes scroll
     <div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-secondary/20 text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-md shadow-sm">
@@ -103,6 +107,7 @@ const Index = () => {
       </header>
 
       {/* Main layout */}
+      {/* keep main height locked to viewport minus header; don't let body scroll */}
       <main className="flex flex-1 h-[calc(100vh-73px)] overflow-hidden">
         {/* Sidebar */}
         <aside
@@ -110,11 +115,15 @@ const Index = () => {
             ${mobileSidebarOpen ? "fixed z-20 left-0 top-0 h-full" : "sm:relative sm:flex-shrink-0 sm:block"}`}
           style={{ width: mobileSidebarOpen ? "80%" : `${sidebarWidth}%`, minWidth: "240px", maxWidth: "700px" }}
         >
+          {/* ensure aside occupies full height and its inner content is scrollable */}
           <div className="h-full flex flex-col p-6 overflow-auto no-scrollbar">
-            {/* Upload pill (removed top Select All) */}
+            {/* Upload pill + Select All */}
             {files.length > 0 ? (
-              <div className="mb-4">
+              <div className="mb-4 flex items-center justify-between gap-2">
                 <FileUpload onFilesUploaded={handleFilesUploaded} small />
+                <Button variant="ghost" size="sm" onClick={handleSelectAllSources}>
+                  {selectedSources.size === files.length ? "Deselect All" : "Select All"}
+                </Button>
               </div>
             ) : (
               <div className="mb-4">
@@ -156,9 +165,12 @@ const Index = () => {
         {mobileSidebarOpen && <div className="sm:hidden fixed inset-0 bg-black/20 z-10" onClick={() => setMobileSidebarOpen(false)} />}
 
         {/* Chat */}
+        {/* make the section itself overflow-hidden and put the scroll on an inner flex-1 container */}
         <section className="flex-1 bg-gradient-to-br from-card to-background overflow-hidden no-scrollbar p-6">
           <div className="h-full flex flex-col max-w-4xl mx-auto rounded-2xl border border-border bg-card/70 backdrop-blur-sm shadow-xl overflow-hidden">
+            {/* THIS wrapper is the one that will hold the scrollable chat messages */}
             <div className="flex-1 overflow-auto no-scrollbar">
+              {/* ChatArea should be implemented as a column with a messages area that can stretch */}
               <ChatArea />
             </div>
           </div>

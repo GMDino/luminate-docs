@@ -1,5 +1,7 @@
+import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import mammoth from "mammoth";
 
 interface UploadedFile {
   id: string;
@@ -15,8 +17,95 @@ interface DocumentViewerProps {
 }
 
 export const DocumentViewer = ({ file, onClose }: DocumentViewerProps) => {
+  const [wordHTML, setWordHTML] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [showButton, setShowButton] = useState(false);
+  const [buttonPos, setButtonPos] = useState({ top: 0, left: 0 });
+
+  /** Load Word document */
+  useEffect(() => {
+    if (!file || file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return;
+    if (!file.content) return;
+
+    const loadWord = async () => {
+      try {
+        const response = await fetch(file.content);
+        const arrayBuffer = await response.arrayBuffer();
+        const { value } = await mammoth.convertToHtml({ arrayBuffer });
+        setWordHTML(value);
+      } catch (err) {
+        console.error("Failed to load Word file:", err);
+      }
+    };
+
+    loadWord();
+  }, [file]);
+
+  /** Handle text selection for floating highlight button */
+  const handleSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !contentRef.current) {
+      setShowButton(false);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!contentRef.current.contains(range.commonAncestorContainer)) {
+      setShowButton(false);
+      return;
+    }
+
+    if (selection.toString().trim() === "") {
+      setShowButton(false);
+      return;
+    }
+
+    const container = contentRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const rangeRect = range.getBoundingClientRect();
+
+    // Center horizontally above the selection
+    const left =
+      rangeRect.left -
+      containerRect.left +
+      rangeRect.width / 2 +
+      container.scrollLeft;
+
+    const top =
+      rangeRect.top -
+      containerRect.top -
+      40 + // height above selection
+      container.scrollTop;
+
+    setButtonPos({ top, left });
+    setShowButton(true);
+  };
+
+  /** Highlight selected text */
+  const handleHighlight = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !contentRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    if (!contentRef.current.contains(range.commonAncestorContainer)) return;
+
+    const span = document.createElement("span");
+    span.style.backgroundColor = "yellow";
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+
+    selection.removeAllRanges();
+    setShowButton(false);
+  };
+
+  useEffect(() => {
+    document.addEventListener("selectionchange", handleSelection);
+    return () => document.removeEventListener("selectionchange", handleSelection);
+  }, []);
+
   if (!file) return null;
 
+  /** Render content by file type */
   const renderContent = () => {
     if (!file.content) {
       return (
@@ -50,18 +139,45 @@ export const DocumentViewer = ({ file, onClose }: DocumentViewerProps) => {
       );
     }
 
-    // ✅ PDF preview — full height
+    // ✅ PDF preview — iframe
     if (file.type === "application/pdf") {
       return (
         <div className="flex-1 h-full overflow-hidden bg-muted/10">
           <iframe
             src={file.content}
             title={file.name}
-            className="w-full h-full min-h-[80vh] border-none rounded-b-lg"
+            className="w-full h-full border-none rounded-b-lg"
             style={{
-              height: "calc(100vh - 100px)", // ensure it fills available height
+              height: "calc(100vh - 100px)",
             }}
           />
+        </div>
+      );
+    }
+
+    // ✅ Word preview with highlight
+    if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      return (
+        <div className="h-full overflow-auto p-4 relative" ref={contentRef}>
+          <div
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: wordHTML }}
+          />
+          {showButton && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleHighlight}
+              className="absolute z-50 shadow-md"
+              style={{
+                top: `${buttonPos.top}px`,
+                left: `${buttonPos.left}px`,
+                transform: "translateX(-50%)", // perfect center
+              }}
+            >
+              Highlight
+            </Button>
+          )}
         </div>
       );
     }
@@ -75,15 +191,10 @@ export const DocumentViewer = ({ file, onClose }: DocumentViewerProps) => {
   };
 
   return (
-    <div
-      className="flex flex-col h-full bg-card rounded-xl shadow-md overflow-hidden border border-border"
-      style={{ boxShadow: "var(--shadow-elevated)" }}
-    >
+    <div className="flex flex-col h-full bg-card rounded-xl shadow-md overflow-hidden border border-border">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-primary/5 to-accent/5">
-        <h2 className="font-semibold text-foreground truncate flex-1 pr-4">
-          {file.name}
-        </h2>
+        <h2 className="font-semibold text-foreground truncate flex-1 pr-4">{file.name}</h2>
         <Button
           variant="ghost"
           size="icon"
